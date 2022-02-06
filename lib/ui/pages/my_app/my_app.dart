@@ -7,7 +7,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final navogation = MainNavigation();
+    final navigation = MainNavigation();
     return MaterialApp(
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
@@ -22,8 +22,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      initialRoute: navogation.initialRoute,
-      routes: navogation.routes,
+      initialRoute: navigation.initialRoute,
+      routes: navigation.routes,
+      onGenerateRoute: (settings) => navigation.onGenerateRoute(settings),
     );
   }
 }

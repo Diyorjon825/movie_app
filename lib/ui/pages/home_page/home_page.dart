@@ -21,6 +21,12 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final model = context.watch<HomePageModel>();
+    if (model.popularMovies.isEmpty || model.upcomingMovies.isEmpty) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator.adaptive()),
+      );
+    }
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -174,7 +180,8 @@ class ShortItemMovie extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final film = context.read<HomePageModel>().popularMovies[index];
+    final model = context.read<HomePageModel>();
+    final film = model.popularMovies[index];
     final posterPath = ApiClient.imageUrl(film.posterPath ?? '');
     return SizedBox(
       width: 120,
@@ -215,7 +222,7 @@ class ShortItemMovie extends StatelessWidget {
             color: Colors.transparent,
             child: InkWell(
               borderRadius: BorderRadius.circular(10),
-              onTap: () {},
+              onTap: () => model.onMovieTap(context, film.id),
             ),
           )
         ],

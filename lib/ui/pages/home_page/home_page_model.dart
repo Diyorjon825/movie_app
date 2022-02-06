@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:movie_app/domain/api_client/api_client.dart';
 import 'package:movie_app/domain/entity/movie.dart';
 import 'package:movie_app/domain/entity/movie_list_response.dart';
+import 'package:movie_app/ui/main_navigation/main_navigation.dart';
 
 enum _TypeLoad { Search, Popular, Upcoming }
 
@@ -91,14 +92,13 @@ class HomePageModel extends ChangeNotifier {
     } catch (e) {}
   }
 
-  // void onMovieTap(BuildContext context, int index) {
-  //   int movieId = movies[index].id;
-  //   Navigator.pushNamed(
-  //     context,
-  //     MainNavigationRoutes.mainWidgetFullInfo,
-  //     arguments: movieId,
-  //   );
-  // }
+  void onMovieTap(BuildContext context, int id) {
+    Navigator.pushNamed(
+      context,
+      MainNavigationRouteNames.detailInfoPage,
+      arguments: id,
+    );
+  }
 
   String imageUrl(int index) {
     final path = popularMovies[index].posterPath;
