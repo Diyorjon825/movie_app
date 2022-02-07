@@ -88,9 +88,8 @@ class _SearchWidget extends StatelessWidget {
                 color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
           ),
         ),
-        const SizedBox(height: 20),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
           child: Row(
             children: [
               Expanded(
@@ -161,7 +160,7 @@ class _PopularMovies extends StatelessWidget {
               itemBuilder: (BuildContext context, int index) {
                 final model = context.read<HomePageModel>();
                 model.onPopularMovieRender(index);
-                return ShortItemMovie(index: index);
+                return _ShortItemMovie(index: index);
               },
               separatorBuilder: (BuildContext context, int index) {
                 return const SizedBox(width: 14);
@@ -174,9 +173,9 @@ class _PopularMovies extends StatelessWidget {
   }
 }
 
-class ShortItemMovie extends StatelessWidget {
+class _ShortItemMovie extends StatelessWidget {
   final int index;
-  const ShortItemMovie({Key? key, required this.index}) : super(key: key);
+  const _ShortItemMovie({Key? key, required this.index}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -242,7 +241,7 @@ class _UpcommingMovies extends StatelessWidget {
         ((context, index) {
           final model = context.read<HomePageModel>();
           model.onUpcomingMovieRender(index);
-          return FullItemMovie(
+          return _FullItemMovie(
             index: index,
           );
         }),
@@ -252,19 +251,20 @@ class _UpcommingMovies extends StatelessWidget {
   }
 }
 
-class FullItemMovie extends StatelessWidget {
+class _FullItemMovie extends StatelessWidget {
   final int index;
-  const FullItemMovie({Key? key, required this.index}) : super(key: key);
+  const _FullItemMovie({Key? key, required this.index}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final film = context.read<HomePageModel>().upcomingMovies[index];
+    final model = context.read<HomePageModel>();
+    final film = model.upcomingMovies[index];
     final posterPath = ApiClient.imageUrl(film.posterPath ?? '');
     return Padding(
       padding: const EdgeInsets.only(left: 20, right: 20),
       child: Container(
         margin: const EdgeInsets.only(bottom: 20),
-        height: 135.5,
+        height: 120,
         child: Stack(
           children: [
             Row(
@@ -320,7 +320,7 @@ class FullItemMovie extends StatelessWidget {
               color: Colors.transparent,
               child: InkWell(
                 borderRadius: BorderRadius.circular(10),
-                onTap: () {},
+                onTap: () => model.onMovieTap(context, film.id),
               ),
             )
           ],

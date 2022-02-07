@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:movie_app/domain/api_client/api_client.dart';
+import 'package:movie_app/ui/pages/detail_info_page/detail_info_page_model.dart';
 import 'package:movie_app/ui/pages/paint_indicator/paint_indecator.dart';
+import 'package:provider/provider.dart';
 
 class DetailInfoPage extends StatefulWidget {
   const DetailInfoPage({Key? key}) : super(key: key);
@@ -10,9 +13,22 @@ class DetailInfoPage extends StatefulWidget {
 
 class _DetailInfoPageState extends State<DetailInfoPage> {
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final model = context.read<DetailInfoPageModel>();
+    model.setupLocale(context);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: const HeadImageWidget(),
+    final model = context.watch<DetailInfoPageModel>();
+    if (model.movieDetail == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator.adaptive()),
+      );
+    }
+    return const Scaffold(
+      body: HeadImageWidget(),
     );
   }
 }
@@ -22,33 +38,35 @@ class HeadImageWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final model = context.read<DetailInfoPageModel>();
+    final imagePath = ApiClient.imageUrl(model.movieDetail?.backdropPath);
     return CustomScrollView(
       slivers: [
         SliverAppBar(
-            backgroundColor: Colors.red,
-            pinned: true,
-            // title: const Text('Spider Man'),
-            expandedHeight: 216,
-            stretch: true,
-            flexibleSpace: FlexibleSpaceBar(
-              centerTitle: true,
-              title: const Text('Spider Man'),
-              background: ColoredBox(
-                color: Colors.white,
-                child: Container(
-                  decoration: const BoxDecoration(
-                    borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(20),
-                        bottomRight: Radius.circular(20)),
-                  ),
-                  child: const Image(
-                    image: AssetImage('assets/images/backPhoto.jpg'),
+          backgroundColor: const Color.fromRGBO(244, 67, 54, 1),
+          pinned: true,
+          title: Text(model.movieDetail?.title ?? ''),
+          expandedHeight: 216,
+          stretch: true,
+          flexibleSpace: FlexibleSpaceBar(
+            stretchModes: const [StretchMode.zoomBackground],
+            centerTitle: true,
+            background: ColoredBox(
+              color: Colors.white,
+              child: Container(
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: NetworkImage(imagePath),
                     fit: BoxFit.cover,
                   ),
-                  clipBehavior: Clip.hardEdge,
+                ),
+                child: Container(
+                  color: Colors.black.withOpacity(0.4),
                 ),
               ),
-            )),
+            ),
+          ),
+        ),
         SliverList(
           delegate: SliverChildListDelegate(
             const [
@@ -69,6 +87,25 @@ class MainInfoWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final model = context.read<DetailInfoPageModel>();
+    final iso = model.movieDetail?.productionCountries.first.iso;
+    final releaseDate = model.stringFromDate(model.movieDetail?.releaseDate);
+    final runtime = model.movieDetail?.runtime ?? 0;
+    final hours = runtime ~/ 60;
+    final minuts = runtime - (hours * 60);
+    List<String?> genres = [];
+    if (model.movieDetail?.genres != null) {
+      if (model.movieDetail!.genres.length > 1) {
+        if (model.movieDetail?.genres[0].name != null) {
+          genres.add(model.movieDetail?.genres[0].name);
+        }
+        if (model.movieDetail?.genres[1].name != null) {
+          genres.add(model.movieDetail?.genres[1].name);
+        }
+      }
+    }
+    String genre = genres.join(' ');
+
     return Padding(
       padding: const EdgeInsets.only(left: 20, top: 26, right: 20),
       child: SizedBox(
@@ -84,26 +121,28 @@ class MainInfoWidget extends StatelessWidget {
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
+                      children: [
                         Expanded(
                           child: Text(
-                            'Spider  Man',
-                            style: TextStyle(
+                            model.movieDetail?.title ?? '',
+                            style: const TextStyle(
                                 fontSize: 20, fontWeight: FontWeight.bold),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         Expanded(
-                          child: Text('UA | Nov 22, 2019',
-                              style: TextStyle(fontSize: 13)),
+                          child: Text(
+                            '$iso | $releaseDate',
+                            style: const TextStyle(fontSize: 13),
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  const Text(
-                    '1 hr 43 min | Drama, Fantasy',
-                    style: TextStyle(fontSize: 13, color: Colors.blue),
+                  Text(
+                    '$hours hr $minuts min | $genre',
+                    style: const TextStyle(fontSize: 13, color: Colors.blue),
                   ),
                 ],
               ),
@@ -114,14 +153,17 @@ class MainInfoWidget extends StatelessWidget {
               children: [
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
-                  children: const [
-                    SizedBox(height: 10),
-                    Text('19,123 votes'),
+                  children: [
+                    const SizedBox(height: 10),
+                    Text('${model.movieDetail?.voteCount} votes'),
                   ],
                 ),
-                const Text(
-                  'English',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                Text(
+                  '${model.movieDetail?.originalLanguage.toUpperCase()}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
                 ),
               ],
             ),
@@ -137,6 +179,8 @@ class UserScoreWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final model = context.read<DetailInfoPageModel>();
+    final score = (model.movieDetail?.voteAverage ?? 0) * 10;
     return Padding(
       padding: const EdgeInsets.only(left: 20, right: 20, top: 28),
       child: SizedBox(
@@ -154,7 +198,7 @@ class UserScoreWidget extends StatelessWidget {
                       height: 45,
                       width: 45,
                       child: PaintIndecator(
-                        percent: 80,
+                        percent: score,
                         widthLine: 4.3,
                       ),
                     ),
@@ -199,23 +243,26 @@ class MovieDiscriptionWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final model = context.read<DetailInfoPageModel>();
+    final owerview =
+        context.read<DetailInfoPageModel>().movieDetail?.overview ?? '';
     return Padding(
       padding: const EdgeInsets.only(top: 28, left: 20, right: 20),
       child: SizedBox(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text(
+          children: [
+            const Text(
               'Movie description',
               style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
                   color: Colors.grey),
             ),
-            SizedBox(height: 9),
+            const SizedBox(height: 9),
             Text(
-              'Peter Parker is unmasked and no longer able to separate his normal life from the high-stakes of being a super-hero. When he asks for help from Doctor Strange the stakes become even more dangerous, forcing him to discover what it truly means to be Spider-Man',
-              style: TextStyle(fontSize: 13, color: Colors.grey),
+              owerview,
+              style: const TextStyle(fontSize: 13, color: Colors.grey),
               maxLines: 6,
               overflow: TextOverflow.ellipsis,
             ),
@@ -231,8 +278,10 @@ class CastsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final credits = context.watch<DetailInfoPageModel>().credits;
+    if (credits == null) return const SizedBox.shrink();
     return Padding(
-      padding: const EdgeInsets.only(left: 20, right: 20, top: 10),
+      padding: const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 50),
       child: Column(
         children: [
           Row(
@@ -250,9 +299,9 @@ class CastsWidget extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           SizedBox(
-            height: 200,
+            height: 250,
             child: ListView.separated(
-              itemCount: 10,
+              itemCount: credits.cast.length,
               scrollDirection: Axis.horizontal,
               itemBuilder: ((context, index) => _SingleActiorWidget(
                     index: index,
@@ -261,7 +310,6 @@ class CastsWidget extends StatelessWidget {
                   const SizedBox(width: 10),
             ),
           ),
-          const SizedBox(height: 30),
         ],
       ),
     );
@@ -274,6 +322,8 @@ class _SingleActiorWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final actor = context.read<DetailInfoPageModel>().credits?.cast[index];
+    final imagePath = ApiClient.imageUrl(actor?.profilePath);
     return Container(
       width: 117,
       decoration: BoxDecoration(
@@ -284,17 +334,19 @@ class _SingleActiorWidget extends StatelessWidget {
       child: ColoredBox(
         color: Colors.white,
         child: Column(
-          children: const [
+          children: [
             AspectRatio(
-              aspectRatio: 1,
-              child: Image(
-                image: AssetImage('assets/images/actor.jpg'),
+              aspectRatio: 177 / 268,
+              child: Image.network(
+                imagePath,
                 fit: BoxFit.cover,
               ),
             ),
-            Text('Tom Holland'),
-            Text('Peter Parker /'),
-            Text('Spider Man'),
+            Text(
+              '${actor?.name} ${actor?.character} /',
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
           ],
         ),
       ),

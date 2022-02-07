@@ -29,7 +29,7 @@ class _PaintIndecatorState extends State<PaintIndecator> {
         Align(
           alignment: Alignment.center,
           child: Text(
-            '${widget.percent.round()}%',
+            (widget.percent != 0) ? '${widget.percent.round()}%' : 'NR',
             style: const TextStyle(color: Colors.white),
           ),
         )

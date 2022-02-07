@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:movie_app/domain/entity/credits.dart';
 import 'package:movie_app/domain/entity/movie_details.dart';
 import 'package:movie_app/domain/entity/movie_list_response.dart';
 
@@ -16,7 +17,12 @@ class ApiClient {
   final _apiKey = "d7892bcdf6a3abafefb3e9098226c98f";
   static const _imageUrl = 'https://image.tmdb.org/t/p/w500';
   final _client = HttpClient();
-  static imageUrl(String path) => _imageUrl + path;
+  static imageUrl(String? path) {
+    if (path != null) {
+      return _imageUrl + path;
+    }
+    return 'image.tmdb.org/t/p/w500/wwemzKWzjKYJFfCeiB57q3r4Bcm.png';
+  }
 
   Uri _makeUri(String path, [Map<String, dynamic>? parametrs]) {
     final uri = Uri.parse("$_host$path");
@@ -171,6 +177,25 @@ class ApiClient {
     };
 
     final result = _get('/movie/$id', parser, parametrs);
+    return result;
+  }
+
+  Future<Credits> movieCredits(
+    String local,
+    int id,
+  ) async {
+    parser(dynamic json) {
+      final jsonMap = json as Map<String, dynamic>;
+      final result = Credits.fromJson(json);
+      return result;
+    }
+
+    final parametrs = {
+      'api_key': _apiKey,
+      'language': local,
+    };
+
+    final result = _get('/movie/$id/credits', parser, parametrs);
     return result;
   }
 
