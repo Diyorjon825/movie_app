@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:movie_app/domain/api_client/api_client.dart';
-import 'package:movie_app/ui/pages/home_page/home_page_model.dart';
+import 'package:movie_app/ui/pages/home_page/home_page_viewModel.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
@@ -14,14 +14,14 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   void didChangeDependencies() {
-    final model = context.watch<HomePageModel>();
+    final model = context.watch<HomePageViewModel>();
     model.setUpLocale(context);
     super.didChangeDependencies();
   }
 
   @override
   Widget build(BuildContext context) {
-    final model = context.watch<HomePageModel>();
+    final model = context.watch<HomePageViewModel>();
     if (model.popularMovies.isEmpty || model.upcomingMovies.isEmpty) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator.adaptive()),
@@ -47,6 +47,7 @@ class _MoviesList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomScrollView(
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       slivers: <Widget>[
         SliverList(delegate: SliverChildListDelegate([const _PopularMovies()])),
         SliverList(
@@ -77,6 +78,7 @@ class _SearchWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final model = context.read<HomePageViewModel>();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -85,7 +87,10 @@ class _SearchWidget extends StatelessWidget {
           child: Text(
             'What are you looking for ?',
             style: TextStyle(
-                color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
+              color: Colors.black,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
         Padding(
@@ -94,14 +99,14 @@ class _SearchWidget extends StatelessWidget {
             children: [
               Expanded(
                 child: Container(
-                  padding: const EdgeInsets.only(left: 8),
+                  padding: const EdgeInsets.only(left: 10),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
                     color: Colors.grey.shade300,
                   ),
-                  child: const TextField(
-                    decoration: InputDecoration(
-                      icon: Icon(Ionicons.search),
+                  child: TextField(
+                    onChanged: (text) => model.searchText = text,
+                    decoration: const InputDecoration(
                       hintText: 'Search for movies, events & more...',
                       hintStyle: TextStyle(color: Colors.grey, fontSize: 13),
                       border: InputBorder.none,
@@ -117,10 +122,13 @@ class _SearchWidget extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                   color: const Color.fromRGBO(10, 89, 248, 1),
                 ),
-                child: const Icon(
-                  Ionicons.options_outline,
-                  color: Colors.white,
-                  size: 30,
+                child: IconButton(
+                  onPressed: () {},
+                  icon: const Icon(
+                    Ionicons.search,
+                    color: Colors.white,
+                    size: 30,
+                  ),
                 ),
               )
             ],
@@ -136,7 +144,8 @@ class _PopularMovies extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final films = context.select((HomePageModel value) => value.popularMovies);
+    final films =
+        context.select((HomePageViewModel value) => value.popularMovies);
 
     return Padding(
       padding: const EdgeInsets.only(top: 25, left: 20),
@@ -158,8 +167,8 @@ class _PopularMovies extends StatelessWidget {
               itemCount: films.length,
               scrollDirection: Axis.horizontal,
               itemBuilder: (BuildContext context, int index) {
-                final model = context.read<HomePageModel>();
-                model.onPopularMovieRender(index);
+                final model = context.read<HomePageViewModel>();
+                model.onPopularMovieRender(index, context);
                 return _ShortItemMovie(index: index);
               },
               separatorBuilder: (BuildContext context, int index) {
@@ -179,7 +188,7 @@ class _ShortItemMovie extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final model = context.read<HomePageModel>();
+    final model = context.read<HomePageViewModel>();
     final film = model.popularMovies[index];
     final posterPath = ApiClient.imageUrl(film.posterPath ?? '');
     return SizedBox(
@@ -235,12 +244,13 @@ class _UpcommingMovies extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final films = context.select((HomePageModel value) => value.upcomingMovies);
+    final films =
+        context.select((HomePageViewModel value) => value.upcomingMovies);
     return SliverList(
       delegate: SliverChildBuilderDelegate(
         ((context, index) {
-          final model = context.read<HomePageModel>();
-          model.onUpcomingMovieRender(index);
+          final model = context.read<HomePageViewModel>();
+          model.onUpcomingMovieRender(index, context);
           return _FullItemMovie(
             index: index,
           );
@@ -257,7 +267,7 @@ class _FullItemMovie extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final model = context.read<HomePageModel>();
+    final model = context.read<HomePageViewModel>();
     final film = model.upcomingMovies[index];
     final posterPath = ApiClient.imageUrl(film.posterPath ?? '');
     return Padding(
@@ -320,7 +330,7 @@ class _FullItemMovie extends StatelessWidget {
               color: Colors.transparent,
               child: InkWell(
                 borderRadius: BorderRadius.circular(10),
-                onTap: () => model.onMovieTap(context, film.id),
+                onTap: () {},
               ),
             )
           ],

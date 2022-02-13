@@ -186,7 +186,7 @@ class ApiClient {
   ) async {
     parser(dynamic json) {
       final jsonMap = json as Map<String, dynamic>;
-      final result = Credits.fromJson(json);
+      final result = Credits.fromJson(jsonMap);
       return result;
     }
 
