@@ -339,6 +339,8 @@ class _SingleActiorWidget extends StatelessWidget {
               child: Image.network(
                 imagePath,
                 fit: BoxFit.cover,
+                errorBuilder: (context, obj, n) =>
+                    Image.asset('assets/images/no-image-png-2.png'),
               ),
             ),
             Text(

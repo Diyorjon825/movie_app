@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:ionicons/ionicons.dart';
-import 'package:movie_app/domain/api_client/api_client.dart';
 import 'package:movie_app/ui/pages/home_page/home_page_viewModel.dart';
+import 'package:movie_app/ui/widgets/full_film_item_widget.dart';
+import 'package:movie_app/ui/widgets/short_film_item_widget.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
@@ -56,7 +57,7 @@ class _MoviesList extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(left: 20, top: 35, bottom: 15),
                 child: Text(
-                  'Upcomming Movies',
+                  'Popular Movies',
                   style: TextStyle(
                     fontSize: 16,
                     color: Colors.grey.shade700,
@@ -79,62 +80,43 @@ class _SearchWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final model = context.read<HomePageViewModel>();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.only(top: 40, left: 20),
-          child: Text(
-            'What are you looking for ?',
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+    return Padding(
+      padding: const EdgeInsets.only(top: 40, left: 20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Expanded(
+            child: Text(
+              'What are you looking for ?',
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-          child: Row(
-            children: [
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.only(left: 10),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: Colors.grey.shade300,
-                  ),
-                  child: TextField(
-                    onChanged: (text) => model.searchText = text,
-                    decoration: const InputDecoration(
-                      hintText: 'Search for movies, events & more...',
-                      hintStyle: TextStyle(color: Colors.grey, fontSize: 13),
-                      border: InputBorder.none,
-                    ),
-                  ),
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              color: const Color.fromRGBO(10, 89, 248, 1),
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(10),
+                child: const Icon(
+                  Ionicons.search,
+                  color: Colors.white,
+                  size: 30,
                 ),
+                onTap: () => model.onSearchButtonTap(context),
               ),
-              const SizedBox(width: 10),
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: const Color.fromRGBO(10, 89, 248, 1),
-                ),
-                child: IconButton(
-                  onPressed: () {},
-                  icon: const Icon(
-                    Ionicons.search,
-                    color: Colors.white,
-                    size: 30,
-                  ),
-                ),
-              )
-            ],
-          ),
-        )
-      ],
+            ),
+          )
+        ],
+      ),
     );
   }
 }
@@ -145,7 +127,7 @@ class _PopularMovies extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final films =
-        context.select((HomePageViewModel value) => value.popularMovies);
+        context.select((HomePageViewModel value) => value.upcomingMovies);
 
     return Padding(
       padding: const EdgeInsets.only(top: 25, left: 20),
@@ -153,7 +135,7 @@ class _PopularMovies extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Popular Movies',
+            'Upcomming Movies',
             style: TextStyle(
               fontSize: 16,
               color: Colors.grey.shade700,
@@ -169,68 +151,11 @@ class _PopularMovies extends StatelessWidget {
               itemBuilder: (BuildContext context, int index) {
                 final model = context.read<HomePageViewModel>();
                 model.onPopularMovieRender(index, context);
-                return _ShortItemMovie(index: index);
+                return ShortItemMovie(film: films[index]);
               },
               separatorBuilder: (BuildContext context, int index) {
                 return const SizedBox(width: 14);
               },
-            ),
-          )
-        ],
-      ),
-    );
-  }
-}
-
-class _ShortItemMovie extends StatelessWidget {
-  final int index;
-  const _ShortItemMovie({Key? key, required this.index}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final model = context.read<HomePageViewModel>();
-    final film = model.popularMovies[index];
-    final posterPath = ApiClient.imageUrl(film.posterPath ?? '');
-    return SizedBox(
-      width: 120,
-      child: Stack(
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                height: 155,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  image: DecorationImage(
-                    image: NetworkImage(posterPath),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-              Text(
-                film.title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              Row(
-                children: [
-                  const Icon(
-                    Icons.favorite,
-                    size: 20,
-                    color: Colors.red,
-                  ),
-                  Text('${(film.voteAverage * 10).round()} %'),
-                ],
-              )
-            ],
-          ),
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(10),
-              onTap: () => model.onMovieTap(context, film.id),
             ),
           )
         ],
@@ -245,96 +170,15 @@ class _UpcommingMovies extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final films =
-        context.select((HomePageViewModel value) => value.upcomingMovies);
+        context.select((HomePageViewModel value) => value.popularMovies);
     return SliverList(
       delegate: SliverChildBuilderDelegate(
         ((context, index) {
           final model = context.read<HomePageViewModel>();
           model.onUpcomingMovieRender(index, context);
-          return _FullItemMovie(
-            index: index,
-          );
+          return FullItemMovie(film: films[index]);
         }),
         childCount: films.length,
-      ),
-    );
-  }
-}
-
-class _FullItemMovie extends StatelessWidget {
-  final int index;
-  const _FullItemMovie({Key? key, required this.index}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final model = context.read<HomePageViewModel>();
-    final film = model.upcomingMovies[index];
-    final posterPath = ApiClient.imageUrl(film.posterPath ?? '');
-    return Padding(
-      padding: const EdgeInsets.only(left: 20, right: 20),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 20),
-        height: 120,
-        child: Stack(
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 90,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    image: DecorationImage(
-                      image: NetworkImage(posterPath),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        film.title,
-                        style: const TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 10),
-                      Expanded(
-                        child: Text(
-                          film.overview,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey.shade600,
-                          ),
-                          maxLines: 4,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.favorite,
-                            size: 20,
-                            color: Colors.red,
-                          ),
-                          Text('${(film.voteAverage * 10).round()} %'),
-                        ],
-                      )
-                    ],
-                  ),
-                )
-              ],
-            ),
-            Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(10),
-                onTap: () {},
-              ),
-            )
-          ],
-        ),
       ),
     );
   }

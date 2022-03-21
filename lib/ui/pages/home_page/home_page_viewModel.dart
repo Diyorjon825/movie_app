@@ -17,8 +17,8 @@ class HomePageViewModel extends ChangeNotifier {
   }
 
   void onPopularMovieRender(int index, BuildContext context) async {
-    if (index == homePageModel.popularFIlmModel.movies.length - 1) {
-      await homePageModel.popularFIlmModel.loadMovies(context);
+    if (index == homePageModel.upcommingFIlmModel.movies.length - 1) {
+      await homePageModel.upcommingFIlmModel.loadMovies(context);
       notifyListeners();
     }
   }
@@ -30,8 +30,7 @@ class HomePageViewModel extends ChangeNotifier {
     }
   }
 
-  void onMovieTap(BuildContext context, int id) {
-    Navigator.pushNamed(context, MainNavigationRouteNames.detailInfoPage,
-        arguments: id);
+  void onSearchButtonTap(BuildContext context) {
+    Navigator.pushNamed(context, MainNavigationRouteNames.searchPage);
   }
 }

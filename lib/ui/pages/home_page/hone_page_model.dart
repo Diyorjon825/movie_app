@@ -9,8 +9,8 @@ class HomePageModel {
   final searchFIlmModel = SearchFilmModel();
 
   Future<void> setUpLocale(BuildContext context) async {
-    popularFIlmModel.loadMovies(context);
-    upcommingFIlmModel.loadMovies(context);
+    await popularFIlmModel.loadMovies(context);
+    await upcommingFIlmModel.loadMovies(context);
     // searchFIlmModel.loadMovies(context, null);
   }
 }
@@ -28,8 +28,8 @@ class PopularFilmsModel {
 class UpcommingFilmasModel {
   final networkService =
       NetworkService(requestType: NetWorkRequestType.upcommingMovies);
-  void loadMovies(BuildContext context) {
-    networkService.setupLocale(context);
+  Future<void> loadMovies(BuildContext context) async {
+    await networkService.setupLocale(context);
   }
 
   List<Movie> get movies => networkService.movies;
@@ -38,8 +38,8 @@ class UpcommingFilmasModel {
 class SearchFilmModel {
   SearchFilmModel();
   final networkService = NetworkService(requestType: NetWorkRequestType.search);
-  void loadMovies(BuildContext context, String? searchQury) {
-    networkService.setupLocale(context, searchQury);
+  Future<void> loadMovies(BuildContext context, String? searchQury) async {
+    await networkService.setupLocale(context, searchQury);
   }
 
   List<Movie> get movies => networkService.movies;
