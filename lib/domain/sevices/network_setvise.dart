@@ -17,10 +17,21 @@ class NetworkService {
 
   NetworkService({required this.requestType});
 
-  Future<void> setupLocale(BuildContext context, [String? searchQury]) async {
-    _searchQury = searchQury;
+  Future<void> setupLocale(BuildContext context, [String? searchQuery]) async {
+    if (_searchQury != searchQuery) {
+      movies.clear();
+    }
+    _searchQury = searchQuery;
+
     final locale = Localizations.localeOf(context).toLanguageTag();
     await _loadNextPage(locale);
+  }
+
+  Future<void> resetMovieList(BuildContext context, String? searchQuery) async {
+    movies.clear();
+    pageCounter = 1;
+    totalPageCounter = 1;
+    await setupLocale(context, searchQuery);
   }
 
   Future<void> _loadNextPage(String locale) async {
@@ -45,7 +56,7 @@ class NetworkService {
       if (query != null) {
         return _apiClient.searchMovie(page, local, query);
       }
-      return _apiClient.searchMovie(page, local, 'a');
+      return _apiClient.popularFilms(page, local);
     }
   }
 }

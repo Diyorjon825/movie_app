@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:movie_app/domain/api_client/api_client.dart';
 import 'package:movie_app/domain/entity/movie.dart';
@@ -9,7 +10,8 @@ class FullItemMovie extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final posterPath = ApiClient.imageUrl(film.posterPath ?? '');
+    final posterPath = ApiClient.imageUrl(film.posterPath);
+    print(film.id);
     return Padding(
       padding: const EdgeInsets.only(left: 20, right: 20),
       child: Container(
@@ -24,7 +26,11 @@ class FullItemMovie extends StatelessWidget {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
                     image: DecorationImage(
-                      image: NetworkImage(posterPath),
+                      // image: CachedNetworkImageProvider(posterPath),
+                      image: Image.network(posterPath,
+                          errorBuilder: (context, error, stackTrace) {
+                        return Image.asset("assets/images/no-image-png-2.png");
+                      }).image,
                       fit: BoxFit.cover,
                     ),
                   ),

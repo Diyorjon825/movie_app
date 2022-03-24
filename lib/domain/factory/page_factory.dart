@@ -28,4 +28,8 @@ class PageFactory {
       child: const DetailInfoPage(),
     );
   }
+
+  // Widget buildPopularWidget(){
+
+  // }
 }

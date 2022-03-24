@@ -15,8 +15,12 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   void didChangeDependencies() {
-    final model = context.watch<HomePageViewModel>();
-    model.setUpLocale(context);
+    final model = context.read<HomePageViewModel>();
+    if (!model.isPageCreated) {
+      model.setUpLocale(context);
+      model.isPageCreated = true;
+    }
+
     super.didChangeDependencies();
   }
 
@@ -50,7 +54,11 @@ class _MoviesList extends StatelessWidget {
     return CustomScrollView(
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       slivers: <Widget>[
-        SliverList(delegate: SliverChildListDelegate([const _PopularMovies()])),
+        SliverList(
+          delegate: SliverChildListDelegate(
+            [const _UpcommingMovies()],
+          ),
+        ),
         SliverList(
           delegate: SliverChildListDelegate(
             [
@@ -68,7 +76,7 @@ class _MoviesList extends StatelessWidget {
             ],
           ),
         ),
-        const _UpcommingMovies()
+        const _PopularMovies()
       ],
     );
   }
@@ -98,6 +106,7 @@ class _SearchWidget extends StatelessWidget {
           Container(
             width: 40,
             height: 40,
+            margin: const EdgeInsets.only(right: 20),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
               color: const Color.fromRGBO(10, 89, 248, 1),
@@ -121,13 +130,13 @@ class _SearchWidget extends StatelessWidget {
   }
 }
 
-class _PopularMovies extends StatelessWidget {
-  const _PopularMovies({Key? key}) : super(key: key);
+class _UpcommingMovies extends StatelessWidget {
+  const _UpcommingMovies({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final films =
-        context.select((HomePageViewModel value) => value.upcomingMovies);
+    final model = context.watch<HomePageViewModel>();
+    final films = model.upcomingMovies;
 
     return Padding(
       padding: const EdgeInsets.only(top: 25, left: 20),
@@ -150,7 +159,7 @@ class _PopularMovies extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               itemBuilder: (BuildContext context, int index) {
                 final model = context.read<HomePageViewModel>();
-                model.onPopularMovieRender(index, context);
+                model.onUpcomingMovieRender(index, context);
                 return ShortItemMovie(film: films[index]);
               },
               separatorBuilder: (BuildContext context, int index) {
@@ -164,18 +173,17 @@ class _PopularMovies extends StatelessWidget {
   }
 }
 
-class _UpcommingMovies extends StatelessWidget {
-  const _UpcommingMovies({Key? key}) : super(key: key);
+class _PopularMovies extends StatelessWidget {
+  const _PopularMovies({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final films =
-        context.select((HomePageViewModel value) => value.popularMovies);
+    final model = context.watch<HomePageViewModel>();
+    final films = model.popularMovies;
     return SliverList(
       delegate: SliverChildBuilderDelegate(
         ((context, index) {
-          final model = context.read<HomePageViewModel>();
-          model.onUpcomingMovieRender(index, context);
+          model.onPopularMovieRender(index, context);
           return FullItemMovie(film: films[index]);
         }),
         childCount: films.length,

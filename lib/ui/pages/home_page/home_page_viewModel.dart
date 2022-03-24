@@ -7,25 +7,26 @@ class HomePageViewModel extends ChangeNotifier {
   final homePageModel = HomePageModel();
   String? searchText;
   bool isSearchOn = false;
+  bool isPageCreated = false;
 
   List<Movie> get popularMovies => homePageModel.popularFIlmModel.movies;
   List<Movie> get upcomingMovies => homePageModel.upcommingFIlmModel.movies;
 
-  void setUpLocale(BuildContext context) async {
+  Future<void> setUpLocale(BuildContext context) async {
     await homePageModel.setUpLocale(context);
     notifyListeners();
   }
 
   void onPopularMovieRender(int index, BuildContext context) async {
     if (index == homePageModel.upcommingFIlmModel.movies.length - 1) {
-      await homePageModel.upcommingFIlmModel.loadMovies(context);
+      await homePageModel.popularFIlmModel.loadMovies(context);
       notifyListeners();
     }
   }
 
   void onUpcomingMovieRender(int index, BuildContext context) async {
     if (index == homePageModel.upcommingFIlmModel.movies.length - 1) {
-      await homePageModel.popularFIlmModel.loadMovies(context);
+      await homePageModel.upcommingFIlmModel.loadMovies(context);
       notifyListeners();
     }
   }
